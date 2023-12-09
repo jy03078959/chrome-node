@@ -1,16 +1,10 @@
-FROM node:21.4.0-bullseye-slim
-
-# Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
-# Note: this installs the necessary libs to make the bundled version of Chrome that Puppeteer
-# installs, work.
-RUN apt-get update \
-    && apt-get install -y wget gnupg \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg \
-    && sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \
-      --no-install-recommends \
-    && service dbus start \
-    && rm -rf /var/lib/apt/lists/*
-
-CMD ["google-chrome-stable"]
+FROM hobsonspipe/centos-node-10-14-1:latest
+LABEL snap.com="nuoyi.wang@kayouyou.cn"
+RUN echo -e "[google-chrome]\nname=google-chrome - 64-bit\nbaseurl=http://dl.google.com/linux/chrome/rpm/stable/x86_64\nenabled=1\ngpgcheck=1\ngpgkey=https://dl-ssl.google.com/linux/linux_signing_key.pub" >> /etc/yum.repos.d/google-chrome.repo \
+  && yum -y install google-chrome-stable --nogpgcheck \
+  && yum -y groupinstall Fonts
+RUN mkdir /usr/share/fonts/chinese \
+  && wget -O /usr/share/fonts/chinese/PingFang.ttc https://godspen.oss-cn-shanghai.aliyuncs.com/aaaa.ttc \
+  && fc-cache -fv \
+  && echo 'fc-list:::::::::' \
+  && fc-list :lang=zh
